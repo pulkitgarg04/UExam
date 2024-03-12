@@ -5,6 +5,3 @@ node_modules/
 
 # Environmental variables
 .env
-
-public/**/*.css
-public/**/*.js

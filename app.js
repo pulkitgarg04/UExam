@@ -48,28 +48,43 @@ app.get('/', (req, res) => {
 });
 
 app.get('/auth/google',
-  passport.authenticate('google', { scope: [ 'email', 'profile' ] }
+passport.authenticate('google', { scope: [ 'email', 'profile' ] }
 ));
 
 app.get('/auth/google/callback',
-  passport.authenticate( 'google', {
-    successRedirect: '/dashboard',
-    failureRedirect: '/auth/google/failure'
-  })
+passport.authenticate( 'google', {
+  successRedirect: '/dashboard',
+  failureRedirect: '/auth/google/failure'
+})
 );
 
 app.get('/dashboard', isLoggedIn, (req, res) => {
-  res.render("dashboard/index.ejs", { name: req.user.displayName });
+  res.render("dashboard/index.ejs",
+  {
+    title: "Dashboard - UExam",
+    name: req.user.displayName,
+    profilePicture: req.user.picture,
+  });
 });
 
 app.get('/dashboard/profile', isLoggedIn, (req, res) => {
-    res.render("dashboard/profile.ejs", { name: req.user.displayName, profilePicture: req.user.photos[0].value, email: emails[0].value });
+  res.render("dashboard/profile.ejs",
+  {
+    title: "Profile - UExam",
+    css: "/css/profile.css",
+    id: req.user.id,
+    firstName: req.user.name.givenName,
+    lastName: req.user.name.familyName,
+    name: req.user.displayName,
+    profilePicture: req.user.picture,
+    email: req.user.emails[0].value
+  });
 });
 
 app.get('/logout', function(req, res) {
-    req.logout(function(err) {
-        if (err) {
-            console.log('Logout error:', err);
+  req.logout(function(err) {
+    if (err) {
+      console.log('Logout error:', err);
             res.status(500).send('Logout failed');
         } else {
             req.session.destroy();
