@@ -7,7 +7,7 @@ passport.use(new GoogleStrategy({
     clientID: process.env.CLIENTID,
     clientSecret: process.env.CLIENTSECRET,
     // callbackURL: "http://localhost:8080/auth/google/callback",
-    callbackURL: "https://uexam.vercel.app/auth/google/callback",
+    callbackURL: "/auth/google/callback",
     passReqToCallback: true
 },
     function (request, accessToken, refreshToken, profile, done) {
