@@ -17,19 +17,19 @@ function isLoggedIn(req, res, next) {
 }
 
 // Database connection
-const dbURL = "mongodb://127.0.0.1:27017/uexam";
+// const dbURL = "mongodb://127.0.0.1:27017/uexam";
 
-main()
-  .then(() => {
-    console.log("mongodb connection sucessfull");
-  })
-  .catch((err) => {
-    console.log(err);
-  });
+// main()
+//   .then(() => {
+//     console.log("mongodb connection sucessfull");
+//   })
+//   .catch((err) => {
+//     console.log(err);
+//   });
 
-async function main() {
-  await mongoose.connect(dbURL);
-}
+// async function main() {
+//   await mongoose.connect(dbURL);
+// }
 
 // Set and use
 app.set("view engine", "ejs");
@@ -65,6 +65,10 @@ app.get('/dashboard', isLoggedIn, (req, res) => {
     name: req.user.displayName,
     profilePicture: req.user.picture,
   });
+});
+
+app.get('/test', isLoggedIn, (req, res) => {
+  res.render("test.ejs");
 });
 
 app.get('/dashboard/profile', isLoggedIn, (req, res) => {
