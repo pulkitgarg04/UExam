@@ -19,7 +19,7 @@ a:hover {
 }
 
 h1, h2, h3, h4, h5, h6 {
-    font-family: "Nunito", sans-serif;
+    font-family: "Jost", sans-serif;
 }
 
 .sidebar {
@@ -171,7 +171,7 @@ h1, h2, h3, h4, h5, h6 {
     font-size: 26px;
     font-weight: 700;
     color: #012970;
-    font-family: "Nunito", sans-serif;
+    font-family: "Jost", sans-serif;
 }
 
 .header {
@@ -276,7 +276,7 @@ h1, h2, h3, h4, h5, h6 {
 
 .breadcrumb {
     font-size: 14px;
-    font-family: "Nunito", sans-serif;
+    font-family: "Jost", sans-serif;
     color: #899bbd;
     font-weight: 600;
 }
