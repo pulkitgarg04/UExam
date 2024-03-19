@@ -67,7 +67,7 @@ app.get('/dashboard', isLoggedIn, (req, res) => {
   });
 });
 
-app.get('/test', isLoggedIn, (req, res) => {
+app.get('/test', (req, res) => {
   res.render("exam/test.ejs");
 });
 
