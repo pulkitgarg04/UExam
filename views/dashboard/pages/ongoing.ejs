@@ -3,7 +3,32 @@
 <body>
 
   <%- include("../includes/header.ejs") %>
-  <%- include("../includes/aside.ejs") %>
+  
+  <aside id="sidebar" class="sidebar">
+    <ul class="sidebar-nav" id="sidebar-nav">
+        <li class="nav-item">
+            <a class="nav-link collapsed" href="/dashboard">
+                <i class="bi bi-grid"></i>
+                <span>All Exams</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/dashboard/ongoing">
+                <i class="fa-regular fa-file-lines"></i><span>Ongoing</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link collapsed" href="/dashboard/completed">
+                <i class="fa-solid fa-square-check"></i></i><span>Completed</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link collapsed" href="/dashboard/upcoming">
+                <i class="fa-solid fa-file-export"></i><span>Upcoming</span>
+            </a>
+        </li>
+    </ul>
+</aside>
 
   <main id="main" class="main">
     <div class="pagetitle">
@@ -13,52 +38,59 @@
       </nav>
     </div>
     <section class="section dashboard mt-5">
-      <h4>Ongoing</h4>
       <div class="row">
-        <div class="card m-3 p-2" style="width: 20rem;">
-          <div class="card-body">
-            <h4 class="card-title">Fundamental Programming with C</h4>
-            <p class="card-subtitle mb-2 text-muted" style="font-size: 13px;">09:00 AM - 10:00 AM (25 March 2024)</p>
-            <a href="/test">
-              <button type="button" class="btn btn-outline-primary mt-1">Give Test</button>
-            </a>
+        <h4>Ongoing</h4>
+        <div class="row">
+          <div class="card m-3 p-2" style="width: 20rem;">
+            <div class="card-body">
+              <h4 class="card-title">Fundamental Programming with C</h4>
+              <p class="card-subtitle mb-2 text-muted" style="font-size: 13px;">09:00 AM - 10:00 AM (19 March 2024)</p>
+              <a href="/test">
+                <button type="button" class="btn btn-outline-primary mt-1">Give Test</button>
+              </a>
+            </div>
           </div>
-        </div>
-        <div class="card m-3 p-2" style="width: 20rem;">
-          <div class="card-body">
-            <h4 class="card-title">Python Programming</h4>
-            <p class="card-subtitle mb-2 text-muted" style="font-size: 13px;">09:00 AM - 10:00 AM (25 March 2024)</p>
-            <button type="button" class="btn btn-outline-primary mt-1">Give Test</button>
+          <div class="card m-3 p-2" style="width: 20rem;">
+            <div class="card-body">
+              <h4 class="card-title">Python Programming</h4>
+              <p class="card-subtitle mb-2 text-muted" style="font-size: 13px;">01:00 PM - 02:00 PM (19 March 2024)</p>
+              <a href="/test">
+                <button type="button" class="btn btn-outline-primary mt-1">Give Test</button>
+              </a>
+            </div>
           </div>
-        </div>
-        <div class="card m-3 p-2" style="width: 20rem;">
-          <div class="card-body">
-            <h4 class="card-title">Engineering Mathematics</h4>
-            <p class="card-subtitle mb-2 text-muted" style="font-size: 13px;">09:00 AM - 10:00 AM (25 March 2024)</p>
-            <a href="/test">
-              <button type="button" class="btn btn-outline-primary mt-1">Give Test</button>
-            </a>
+          <div class="card m-3 p-2" style="width: 20rem;">
+            <div class="card-body">
+              <h4 class="card-title">Engineering Mathematics</h4>
+              <p class="card-subtitle mb-2 text-muted" style="font-size: 13px;">09:00 AM - 10:00 AM (20 March 2024)</p>
+              <a href="/test">
+                <button type="button" class="btn btn-outline-primary mt-1">Give Test</button>
+              </a>
+            </div>
           </div>
-        </div>
-        <div class="card m-3 p-2" style="width: 20rem;">
-          <div class="card-body">
-            <h4 class="card-title">Engineering Physics</h4>
-            <p class="card-subtitle mb-2 text-muted" style="font-size: 13px;">09:00 AM - 10:00 AM (25 March 2024)</p>
-            <button type="button" class="btn btn-outline-primary mt-1">Give Test</button>
+          <div class="card m-3 p-2" style="width: 20rem;">
+            <div class="card-body">
+              <h4 class="card-title">Engineering Physics</h4>
+              <p class="card-subtitle mb-2 text-muted" style="font-size: 13px;">01:00 PM - 02:00 PM (20 March 2024)</p>
+              <a href="/test">
+                <button type="button" class="btn btn-outline-primary mt-1">Give Test</button>
+              </a>
+            </div>
           </div>
-        </div>
-        <div class="card m-3 p-2" style="width: 20rem;">
-          <div class="card-body">
-            <h4 class="card-title">Computer Networks</h4>
-            <p class="card-subtitle mb-2 text-muted" style="font-size: 13px;">09:00 AM - 10:00 AM (25 March 2024)</p>
-            <button type="button" class="btn btn-outline-primary mt-1">Give Test</button>
+          <div class="card m-3 p-2" style="width: 20rem;">
+            <div class="card-body">
+              <h4 class="card-title">Computer Networks</h4>
+              <p class="card-subtitle mb-2 text-muted" style="font-size: 13px;">09:00 AM - 10:00 AM (21 March 2024)</p>
+              <a href="/test">
+                <button type="button" class="btn btn-outline-primary mt-1">Give Test</button>
+              </a>
+            </div>
           </div>
-        </div>
-      </div>
+    </div>
     </section>
   </main>
-
+  
   <%- include("../includes/footer.ejs") %>
-
+  
 </body>
 </html>
