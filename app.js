@@ -67,6 +67,33 @@ app.get('/dashboard', isLoggedIn, (req, res) => {
   });
 });
 
+app.get('/dashboard/ongoing', isLoggedIn, (req, res) => {
+  res.render("dashboard/pages/ongoing.ejs",
+  {
+    title: "Ongoing - UExam",
+    name: req.user.displayName,
+    profilePicture: req.user.picture,
+  });
+});
+
+app.get('/dashboard/completed', isLoggedIn, (req, res) => {
+  res.render("dashboard/pages/completed.ejs",
+  {
+    title: "Completed - UExam",
+    name: req.user.displayName,
+    profilePicture: req.user.picture,
+  });
+});
+
+app.get('/dashboard/upcoming', isLoggedIn, (req, res) => {
+  res.render("dashboard/pages/upcoming.ejs",
+  {
+    title: "Upcoming - UExam",
+    name: req.user.displayName,
+    profilePicture: req.user.picture,
+  });
+});
+
 app.get('/test', (req, res) => {
   res.render("exam/test.ejs");
 });
