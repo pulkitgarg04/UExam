@@ -10,26 +10,20 @@ const ejsMate = require("ejs-mate");
 const ExpressError = require("./utils/ExpressError.js");
 const session = require('express-session');
 const passport = require('passport');
+const User = require('./models/user.js')
+const cookieParser = require('cookie-parser');
 require('./auth');
 
+app.use(cookieParser());
+
+//
 function isLoggedIn(req, res, next) {
-  req.user ? next() : res.sendStatus(401);
+  if (req.cookies.authToken) {
+    next();
+  } else {
+    res.sendStatus(400);
+  }
 }
-
-// Database connection
-// const dbURL = "mongodb://127.0.0.1:27017/uexam";
-
-// main()
-//   .then(() => {
-//     console.log("mongodb connection sucessfull");
-//   })
-//   .catch((err) => {
-//     console.log(err);
-//   });
-
-// async function main() {
-//   await mongoose.connect(dbURL);
-// }
 
 // Set and use
 app.set("view engine", "ejs");
@@ -48,50 +42,100 @@ app.get('/', (req, res) => {
 });
 
 app.get('/auth/google',
-passport.authenticate('google', { scope: [ 'email', 'profile' ] }
-));
+  passport.authenticate('google', { scope: ['email', 'profile'] }
+  ));
 
 app.get('/auth/google/callback',
-passport.authenticate( 'google', {
-  successRedirect: '/dashboard',
-  failureRedirect: '/auth/google/failure'
-})
+  passport.authenticate('google', {
+    successRedirect: '/dashboard',
+    failureRedirect: '/auth/google/failure'
+  })
 );
 
 app.get('/dashboard', isLoggedIn, (req, res) => {
   res.render("dashboard/index.ejs",
-  {
-    title: "Dashboard - UExam",
-    name: req.user.displayName,
-    profilePicture: req.user.picture,
-  });
+    {
+      title: "Dashboard - UExam",
+    });
 });
 
-app.get('/dashboard/ongoing', isLoggedIn, (req, res) => {
+app.get('/dashboard/ongoing', (req, res) => {
   res.render("dashboard/pages/ongoing.ejs",
-  {
-    title: "Ongoing - UExam",
-    name: req.user.displayName,
-    profilePicture: req.user.picture,
-  });
+    {
+      title: "Ongoing - UExam",
+      name: req.user.displayName,
+      profilePicture: req.user.picture,
+    });
+});
+app.get('/signup', (req, res) => {
+  res.render("signup.ejs",
+    {
+      title: "Sign Up - UExam",
+    });
 });
 
-app.get('/dashboard/completed', isLoggedIn, (req, res) => {
+app.post('/signup/todb', async (req, res) => {
+  const data = req.body;
+  try {
+    mongoose.connect('mongodb://localhost:27017/uexam')
+    const newUser = new User({
+      email: data.email,
+      fullName: data.fullName,
+      username: data.username
+    })
+    await newUser.save();
+    res.cookie('email', data.email, { maxAge: 3600000, httpOnly: true });
+    res.redirect('/dashboard')
+  } catch (error) {
+    res.sendStatus(500)
+  }
+});
+app.post('/signin/todb', async (req, res) => {
+  const data = req.body;
+  try {
+    mongoose.connect('mongodb://localhost:27017/uexam')
+
+    // if field is username or email
+    const findUser = await User.find({
+      email: data.email
+    })
+
+    // check if user is present or not
+    if(!findUser) res.sendStatus(201);
+
+    if(findUser.password !== data.password){
+      res.sendStatus(201);
+    }
+
+    const authToken = '';
+
+    res.cookie('authToken', authToken, { maxAge: 3600000, httpOnly: true });
+
+    // redirecting
+    res.redirect('/dashboard')
+  } catch (error) {
+    res.sendStatus(500)
+  }
+});
+
+
+
+app.get('/dashboard/completed', (req, res) => {
   res.render("dashboard/pages/completed.ejs",
-  {
-    title: "Completed - UExam",
-    name: req.user.displayName,
-    profilePicture: req.user.picture,
-  });
+    {
+      title: "Completed - UExam",
+      name: req.user.displayName,
+      profilePicture: req.user.picture,
+    });
 });
 
-app.get('/dashboard/upcoming', isLoggedIn, (req, res) => {
+app.get('/dashboard/upcoming', (req, res) => {
   res.render("dashboard/pages/upcoming.ejs",
-  {
-    title: "Upcoming - UExam",
-    name: req.user.displayName,
-    profilePicture: req.user.picture,
-  });
+    {
+      title: "Upcoming - UExam",
+      name: req.user.displayName,
+      profilePicture: req.user.picture,
+    });
 });
 
 app.get('/test', (req, res) => {
@@ -100,28 +144,28 @@ app.get('/test', (req, res) => {
 
 app.get('/dashboard/profile', isLoggedIn, (req, res) => {
   res.render("dashboard/profile.ejs",
-  {
-    title: "Profile - UExam",
-    css: "/css/profile.css",
-    id: req.user.id,
-    firstName: req.user.name.givenName,
-    lastName: req.user.name.familyName,
-    name: req.user.displayName,
-    profilePicture: req.user.picture,
-    email: req.user.emails[0].value
-  });
+    {
+      title: "Profile - UExam",
+      css: "/css/profile.css",
+      id: req.user.id,
+      firstName: req.user.name.givenName,
+      lastName: req.user.name.familyName,
+      name: req.user.displayName,
+      profilePicture: req.user.picture,
+      email: req.user.emails[0].value
+    });
 });
 
-app.get('/logout', function(req, res) {
-  req.logout(function(err) {
+app.get('/logout', function (req, res) {
+  req.logout(function (err) {
     if (err) {
       console.log('Logout error:', err);
-            res.status(500).send('Logout failed');
-        } else {
-            req.session.destroy();
-            res.redirect('/');
-        }
-    });
+      res.status(500).send('Logout failed');
+    } else {
+      req.session.destroy();
+      res.redirect('/');
+    }
+  });
 });
 
 app.get('/auth/google/failure', (req, res) => {
