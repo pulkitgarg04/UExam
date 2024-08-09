@@ -4,6 +4,8 @@ if (process.env.NODE_ENV != "production") {
 
 const express = require('express');
 const app = express();
+
+
 const path = require("path");
 const mongoose = require("mongoose");
 const ejsMate = require("ejs-mate");
@@ -12,7 +14,7 @@ const session = require('express-session');
 const passport = require('passport');
 const User = require('./models/user.js')
 const cookieParser = require('cookie-parser');
-require('./auth');
+require('./auth.js');
 
 app.use(cookieParser());
 
