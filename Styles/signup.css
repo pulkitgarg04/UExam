@@ -1,0 +1,56 @@
+body {
+    background-image: url("../Images/Chitkara_University_pic.jpg");
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-attachment: fixed;
+    background-size: cover;
+    font-family: Helvetica;
+}
+.box {
+    background-color: white;
+    margin-top: 11%;
+    margin-left: 40%;
+    margin-right: 40%;
+    height: 360px;
+}
+.heading {
+    font-size: 20px;
+}
+.content {
+    position: center;
+}
+
+.logo {
+    height: 80px;
+    width: auto;
+    position: center;
+}
+
+.submit {
+    color: white;
+    background-color: #e31e25;
+    border-color: #e31e25;
+    height: 30px;
+    width: 300px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.submit:hover {
+    background-color: #ba191e;
+    border-radius: 10px;
+}
+
+p {
+    font-size: 13px;
+    margin-top: 5px;
+}
+
+.login-text {
+    text-decoration: none;
+}
+
+.login-text:hover {
+    text-decoration: underline;
+    cursor: pointer;
+}
