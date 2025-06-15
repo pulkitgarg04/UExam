@@ -1,0 +1,54 @@
+{
+  "upcomingExams": [
+    {
+      "id": 1,
+      "title": "JavaScript Basics Quiz",
+      "subject": "JavaScript",
+      "date": "2024-02-15",
+      "time": "3:00 PM",
+      "duration": "1 hour",
+      "status": "upcoming",
+      "questions": 20
+    },
+    {
+      "id": 2,
+      "title": "React Fundamentals Assessment",
+      "subject": "React",
+      "date": "2024-02-18",
+      "time": "11:00 AM",
+      "duration": "1.5 hours",
+      "status": "upcoming",
+      "questions": 30
+    },
+    {
+      "id": 3,
+      "title": "Data Structures and Algorithms",
+      "subject": "DSA",
+      "date": "2024-02-20",
+      "time": "10:00 AM",
+      "duration": "2 hours",
+      "status": "upcoming",
+      "questions": 40
+    }
+  ],
+  "completedExams": [
+    {
+      "id": 4,
+      "title": "Git and GitHub Quiz",
+      "subject": "Version Control",
+      "score": 88,
+      "maxScore": 100,
+      "date": "2024-02-10",
+      "status": "completed"
+    },
+    {
+      "id": 5,
+      "title": "CSS Flexbox and Grid",
+      "subject": "Web Development",
+      "score": 92,
+      "maxScore": 100,
+      "date": "2024-02-08",
+      "status": "completed"
+    }
+  ]
+}
