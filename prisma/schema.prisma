@@ -6,7 +6,7 @@
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../app/generated/prisma"
+  output   = "../src/app/generated/prisma"
 }
 
 datasource db {
@@ -24,6 +24,14 @@ model User {
   updatedAt   DateTime  @updatedAt
   tests       Test[]    @relation("UserTests")
   answers     Answer[]  @relation("UserAnswers")
+}
+
+model VerificationToken {
+  id         String
+  token      String
+  expires    DateTime
+ 
+  @@id([id, token])
 }
 
 model Test {
@@ -73,4 +81,9 @@ enum QuestionType {
   FILL_BLANK
   ESSAY
   TRUE_FALSE
+}
+
+enum Gender {
+  MALE
+  FEMALE
 }
