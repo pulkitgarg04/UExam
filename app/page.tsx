@@ -52,15 +52,16 @@ export default function Home() {
               <Link href="/">
                 <Button variant="ghost">Contact Us</Button>
               </Link>
+              <Link href="/auth/login">
               <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
                 Login
               </Button>
+              </Link>
             </div>
           </div>
         </div>
       </nav>
 
-      {/* Hero Section */}
       <section className="relative overflow-hidden py-20 lg:py-32">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
@@ -101,13 +102,11 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Floating Elements */}
         <div className="absolute top-20 left-10 w-20 h-20 bg-blue-200 rounded-full opacity-20 animate-bounce"></div>
         <div className="absolute top-40 right-20 w-16 h-16 bg-purple-200 rounded-full opacity-20 animate-pulse"></div>
         <div className="absolute bottom-20 left-20 w-12 h-12 bg-green-200 rounded-full opacity-20 animate-bounce delay-1000"></div>
       </section>
 
-      {/* Features Section */}
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
@@ -179,7 +178,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Stats Section */}
       <section className="py-20 bg-gradient-to-r from-blue-600 to-purple-600">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-4 gap-8 text-center text-white">
@@ -200,7 +198,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* CTA Section */}
       <section className="py-20 bg-gray-50">
         <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">Ready to Transform Your Testing?</h2>
