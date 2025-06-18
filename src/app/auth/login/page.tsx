@@ -54,6 +54,11 @@ export default function LoginPage() {
       const data = await response.json();
 
       if (!response.ok) {
+        if (response.status === 403 && data.redirectTo) {
+          router.push(data.redirectTo);
+          return;
+        }
+
         throw new Error(data.error || "Login failed");
       }
 

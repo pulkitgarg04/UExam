@@ -5,7 +5,7 @@ import type { JwtPayload } from '@/types';
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  const publicRoutes = ["/", "/auth/login", "/auth/signup", "/unauthorized"]
+  const publicRoutes = ["/", "/auth/login", "/auth/signup", "/auth/verify-email", "/unauthorized"]
   if (publicRoutes.includes(pathname)) {
     return NextResponse.next();
   }

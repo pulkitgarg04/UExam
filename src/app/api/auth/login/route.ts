@@ -22,6 +22,8 @@ export async function POST(request: NextRequest) {
         password: true,
         role: true,
         createdAt: true,
+        isVerified: true,
+        isAdmin: true,
       },
     });
 
@@ -45,6 +47,13 @@ export async function POST(request: NextRequest) {
       process.env.JWT_SECRET || "JWT_SECRET",
       { expiresIn: "7d" }
     );
+
+    if (!user.isVerified) {
+      return NextResponse.json(
+        { error: "Email not verified", redirectTo: `/auth/verify-email?email=${email}` },
+        { status: 403 }
+      );
+    }
     
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password: _unused, ...userWithoutPassword } = user;
