@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -51,20 +52,48 @@ interface ExamData {
 }
 
 export default function StudentPortal() {
+  const router = useRouter();
   const [data, setData] = useState<ExamData>({
     upcomingExams: [],
     completedExams: [],
   });
 
+  const [user, setUser] = useState<any>(null);
+
   useEffect(() => {
-    const fetchData = async () => {
-      const response = await fetch("/data.json");
-      const jsonData = await response.json();
-      setData(jsonData);
+    const fetchUserData = async () => {
+      try {
+        const response = await fetch("/api/auth/me", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+        });
+
+        if (response.ok) {
+          const userData = await response.json();
+          setUser(userData);
+
+          if (!userData.profileCompleted) {
+            router.push("/profile/complete");
+            return;
+          }
+
+          const examResponse = await fetch("data.json");
+          const examData = await examResponse.json();
+          setData(examData);
+        } else {
+          router.push("/auth/login");
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+        router.push("/auth/login");
+      }
     };
 
-    fetchData();
-  }, []);
+    fetchUserData();
+  }, [router]);
 
   const { upcomingExams, completedExams } = data;
 

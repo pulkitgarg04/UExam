@@ -23,7 +23,6 @@ export async function POST(request: NextRequest) {
         role: true,
         createdAt: true,
         isVerified: true,
-        isAdmin: true,
       },
     });
 

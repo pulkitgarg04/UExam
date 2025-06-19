@@ -1,4 +1,6 @@
 "use client";
+
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -24,6 +26,7 @@ import {
   Edit,
   Trash2,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   DropdownMenu,
@@ -33,6 +36,40 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 export default function TeacherPortal() {
+  const router = useRouter();
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+      const fetchUserData = async () => {
+        try {
+          const response = await fetch("/api/auth/me", {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            credentials: "include",
+          });
+  
+          if (response.ok) {
+            const userData = await response.json();
+            setUser(userData);
+  
+            if (!userData.profileCompleted) {
+              router.push("/profile/complete");
+              return;
+            }
+          } else {
+            router.push("/auth/login");
+          }
+        } catch (error) {
+          console.error("Error fetching user data:", error);
+          router.push("/auth/login");
+        }
+      };
+  
+      fetchUserData();
+    }, [router]);
+
   const students = [
     {
       id: 1,
