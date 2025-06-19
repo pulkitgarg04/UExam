@@ -188,7 +188,7 @@ const generateVerificationEmailHTML = (
 
             <div style="text-align: center;">
                 <a href="${verificationLink}" class="cta-button" style="color: white">
-                    ✓ Verify Email Address
+                    Verify Email Address
                 </a>
             </div>
 
