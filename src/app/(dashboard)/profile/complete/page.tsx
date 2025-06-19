@@ -1,23 +1,36 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { User, GraduationCap, BookOpen, AlertCircle, CheckCircle } from "lucide-react"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { TeacherProfileForm } from "@/components/profile/TeacherProfileForm"
-import { StudentProfileForm } from "@/components/profile/StudentProfileForm"
+import { useState, useEffect } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  User,
+  GraduationCap,
+  BookOpen,
+  AlertCircle,
+  CheckCircle,
+} from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { TeacherProfileForm } from "@/components/profile/TeacherProfileForm";
+import { StudentProfileForm } from "@/components/profile/StudentProfileForm";
+import { User as UserData } from "@/types";
 
 export default function CompleteProfilePage() {
-  const [user, setUser] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
-  const [profileProgress, setProfileProgress] = useState(0)
-  const router = useRouter()
+  const [user, setUser] = useState<UserData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [profileProgress, setProfileProgress] = useState(0);
+  const router = useRouter();
 
-useEffect(() => {
+  useEffect(() => {
     const fetchUser = async () => {
       try {
         const response = await fetch("/api/auth/me", {
@@ -25,52 +38,58 @@ useEffect(() => {
           headers: {
             "Content-Type": "application/json",
           },
-        })
+        });
 
         if (!response.ok) {
-          throw new Error("Failed to fetch user")
+          throw new Error("Failed to fetch user");
         }
 
-        const data = await response.json()
-        setUser(data.user)
+        const data = await response.json();
+        setUser(data.user);
 
         if (data.user.profileCompleted) {
           if (data.user.role === "TEACHER") {
-            router.push("/teacher")
+            router.push("/teacher");
           } else if (data.user.role === "STUDENT") {
-            router.push("/student")
+            router.push("/student");
           } else {
-            router.push("/admin")
+            router.push("/admin");
           }
         }
       } catch (error) {
-        console.error("Error fetching user:", error)
-        router.push("/auth/login")
+        console.error("Error fetching user:", error);
+        router.push("/auth/login");
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    fetchUser()
-  }, [router])
+    fetchUser();
+  }, [router]);
 
   const handleProfileComplete = () => {
-    const updatedUser = { ...user, profileCompleted: true }
-    setUser(updatedUser)
+    if (!user) return;
+
+    const updatedUser: UserData = {
+      ...user,
+      profileCompleted: true,
+    };
+
+    setUser(updatedUser);
     fetch("/api/auth/me", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ profileCompleted: true }),
-    })
+    });
 
     if (user.role === "TEACHER") {
-      router.push("/teacher")
+      router.push("/teacher");
     } else if (user.role === "STUDENT") {
-      router.push("/student")
+      router.push("/student");
     } else {
-      router.push("/admin")
+      router.push("/admin");
     }
-  }
+  };
 
   if (loading) {
     return (
@@ -80,13 +99,13 @@ useEffect(() => {
           <p className="text-gray-600">Loading...</p>
         </div>
       </div>
-    )
+    );
   }
 
   if (!user) {
-    return null
+    return null;
   }
-
+  
   return (
     <div className="min-h-screen bg-gray-50">
       <nav className="bg-white border-b sticky top-0 z-50">
@@ -102,7 +121,9 @@ useEffect(() => {
             </Link>
             <div className="flex items-center space-x-4">
               <Badge variant="secondary">Profile Setup</Badge>
-              <Badge variant={user.role === "TEACHER" ? "default" : "outline"}>{user.role}</Badge>
+              <Badge variant={user.role === "TEACHER" ? "default" : "outline"}>
+                {user.role}
+              </Badge>
             </div>
           </div>
         </div>
@@ -117,7 +138,9 @@ useEffect(() => {
               <User className="w-16 h-16 text-green-600" />
             )}
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Complete Your Profile</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            Complete Your Profile
+          </h1>
           <p className="text-gray-600 max-w-2xl mx-auto">
             {user.role === "TEACHER"
               ? "Please provide your academic and professional details to access the teacher portal and create comprehensive tests."
@@ -130,7 +153,8 @@ useEffect(() => {
           <AlertDescription className="text-blue-800">
             <div className="flex items-center justify-between">
               <span>
-                <strong>Profile Completion Required:</strong> You need to complete your profile before accessing the{" "}
+                <strong>Profile Completion Required:</strong> You need to
+                complete your profile before accessing the{" "}
                 {user.role.toLowerCase()} portal.
               </span>
               <Badge variant="outline" className="ml-4">
@@ -223,12 +247,14 @@ useEffect(() => {
                 <li>• You can update your profile later from settings</li>
                 <li>• Ensure all information is accurate and up-to-date</li>
                 <li>• Profile photos should be professional and clear</li>
-                <li>• Contact information will be used for important notifications</li>
+                <li>
+                  • Contact information will be used for important notifications
+                </li>
               </ul>
             </CardContent>
           </Card>
         </div>
       </div>
     </div>
-  )
+  );
 }

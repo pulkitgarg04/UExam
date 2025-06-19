@@ -58,8 +58,6 @@ export default function StudentPortal() {
     completedExams: [],
   });
 
-  const [user, setUser] = useState<any>(null);
-
   useEffect(() => {
     const fetchUserData = async () => {
       try {
@@ -73,7 +71,6 @@ export default function StudentPortal() {
 
         if (response.ok) {
           const userData = await response.json();
-          setUser(userData);
 
           if (!userData.profileCompleted) {
             router.push("/profile/complete");

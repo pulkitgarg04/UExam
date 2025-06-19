@@ -23,9 +23,10 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { User, Save, CheckCircle, X, GraduationCap } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { DEPARTMENTS, STUDENT_YEARS, DEGREES } from "@/constants/data";
+import type { User as UserData } from "@/types";
 
 interface TeacherProfileFormProps {
-  user: any;
+  user: UserData;
   onComplete: () => void;
   onProgressUpdate: (progress: number) => void;
 }

@@ -22,9 +22,10 @@ import {
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { User, Save, CheckCircle } from "lucide-react";
 import { DEPARTMENTS, STUDENT_YEARS, DEGREES } from "@/constants/data";
+import { User as UserData } from "@/types";
 
 interface StudentProfileFormProps {
-  user: any;
+  user: UserData;
   onComplete: () => void;
   onProgressUpdate: (progress: number) => void;
 }

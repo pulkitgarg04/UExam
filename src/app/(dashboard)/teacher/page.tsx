@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -37,7 +37,6 @@ import {
 
 export default function TeacherPortal() {
   const router = useRouter();
-  const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
       const fetchUserData = async () => {
@@ -51,13 +50,7 @@ export default function TeacherPortal() {
           });
   
           if (response.ok) {
-            const userData = await response.json();
-            setUser(userData);
-  
-            if (!userData.profileCompleted) {
-              router.push("/profile/complete");
-              return;
-            }
+            console.log("OK");
           } else {
             router.push("/auth/login");
           }
