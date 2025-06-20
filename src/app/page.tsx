@@ -1,10 +1,16 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import Footer from "@/components/footer"
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import Footer from "@/components/footer";
 import {
   BookOpen,
   Users,
@@ -16,15 +22,34 @@ import {
   GraduationCap,
   UserCheck,
   Zap,
-} from "lucide-react"
-import Link from "next/link"
+  User,
+} from "lucide-react";
+import Link from "next/link";
+import type { User as UserType } from "@/types";
 
 export default function Home() {
-  const [isVisible, setIsVisible] = useState(false)
+  const [isVisible, setIsVisible] = useState(false);
+  const [user, setUser] = useState<UserType | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    setIsVisible(true)
-  }, [])
+    checkAuthStatus();
+    setIsVisible(true);
+  }, []);
+
+  const checkAuthStatus = async () => {
+    try {
+      const res = await fetch("/api/auth/me");
+      if (res.ok) {
+        const data = await res.json();
+        setUser(data.user);
+      }
+    } catch (error) {
+      console.error("Error checking authentication:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
@@ -52,11 +77,23 @@ export default function Home() {
               <Link href="/">
                 <Button variant="ghost">Contact Us</Button>
               </Link>
-              <Link href="/auth/login">
-              <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
-                Login
-              </Button>
-              </Link>
+              {isLoading ? (
+                <div className="w-5 h-5 bg-gray-200 animate-pulse rounded-full"></div>
+              ) : user ? (
+                <>
+                  <Link href="/profile">
+                    <Button variant="ghost" size="icon">
+                      <User className="w-5 h-5" />
+                    </Button>
+                  </Link>
+                </>
+              ) : (
+                <Link href="/auth/login">
+                  <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
+                    Login
+                  </Button>
+                </Link>
+              )}
             </div>
           </div>
         </div>
@@ -66,7 +103,11 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <div
-              className={`transition-all duration-1000 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"}`}
+              className={`transition-all duration-1000 ${
+                isVisible
+                  ? "opacity-100 translate-y-0"
+                  : "opacity-0 translate-y-10"
+              }`}
             >
               <Badge variant="secondary" className="mb-4 px-4 py-2">
                 <Zap className="w-4 h-4 mr-2" />
@@ -79,24 +120,42 @@ export default function Home() {
                 </span>
               </h1>
               <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-                Create, manage, and take exams with our comprehensive platform. Designed for educators and students to
-                excel in the digital age.
+                Create, manage, and take exams with our comprehensive platform.
+                Designed for educators and students to excel in the digital age.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link href="/teacher">
-                  <Button
-                    size="lg"
-                    className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-                  >
-                    Start Teaching
-                    <ArrowRight className="w-5 h-5 ml-2" />
-                  </Button>
-                </Link>
-                <Link href="/student">
-                  <Button size="lg" variant="outline">
-                    Join as Student
-                  </Button>
-                </Link>
+                {isLoading ? (
+                  <div className="w-40 h-12 bg-gray-200 animate-pulse rounded-md"></div>
+                ) : user ? (
+                  <>
+                  <Link href={user.role === "STUDENT" ? "/student" : "/teacher"}>
+                      <Button
+                        size="lg"
+                        className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                      >
+                        Go to Dashboard
+                        <ArrowRight className="w-5 h-5 ml-2" />
+                      </Button>
+                    </Link>
+                  </>
+                ) : (
+                  <>
+                    <Link href="/auth/signup">
+                      <Button
+                        size="lg"
+                        className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                      >
+                        Join as Teacher
+                        <ArrowRight className="w-5 h-5 ml-2" />
+                      </Button>
+                    </Link>
+                    <Link href="/auth/signup">
+                      <Button size="lg" variant="outline">
+                        Join as Student
+                      </Button>
+                    </Link>
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -114,7 +173,8 @@ export default function Home() {
               Everything You Need for Modern Testing
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Powerful features designed to make exam creation and management effortless
+              Powerful features designed to make exam creation and management
+              effortless
             </p>
           </div>
 
@@ -137,19 +197,22 @@ export default function Home() {
               {
                 icon: BarChart3,
                 title: "Advanced Analytics",
-                description: "Get detailed insights into student performance with comprehensive reports and analytics.",
+                description:
+                  "Get detailed insights into student performance with comprehensive reports and analytics.",
                 color: "from-purple-500 to-purple-600",
               },
               {
                 icon: Shield,
                 title: "Secure Testing",
-                description: "Ensure exam integrity with advanced security features and anti-cheating measures.",
+                description:
+                  "Ensure exam integrity with advanced security features and anti-cheating measures.",
                 color: "from-red-500 to-red-600",
               },
               {
                 icon: Clock,
                 title: "Timed Assessments",
-                description: "Set custom time limits and create urgency with built-in timer functionality.",
+                description:
+                  "Set custom time limits and create urgency with built-in timer functionality.",
                 color: "from-orange-500 to-orange-600",
               },
               {
@@ -160,17 +223,24 @@ export default function Home() {
                 color: "from-teal-500 to-teal-600",
               },
             ].map((feature, index) => (
-              <Card key={index} className="group hover:shadow-xl transition-all duration-300 border-0 shadow-lg">
+              <Card
+                key={index}
+                className="group hover:shadow-xl transition-all duration-300 border-0 shadow-lg"
+              >
                 <CardHeader>
                   <div
                     className={`w-12 h-12 rounded-lg bg-gradient-to-r ${feature.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300`}
                   >
                     <feature.icon className="w-6 h-6 text-white" />
                   </div>
-                  <CardTitle className="text-xl font-semibold">{feature.title}</CardTitle>
+                  <CardTitle className="text-xl font-semibold">
+                    {feature.title}
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <CardDescription className="text-gray-600 leading-relaxed">{feature.description}</CardDescription>
+                  <CardDescription className="text-gray-600 leading-relaxed">
+                    {feature.description}
+                  </CardDescription>
                 </CardContent>
               </Card>
             ))}
@@ -200,9 +270,12 @@ export default function Home() {
 
       <section className="py-20 bg-gray-50">
         <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">Ready to Transform Your Testing?</h2>
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
+            Ready to Transform Your Testing?
+          </h2>
           <p className="text-xl text-gray-600 mb-8">
-            Join thousands of educators and students who trust uexam for their assessment needs.
+            Join thousands of educators and students who trust uexam for their
+            assessment needs.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/teacher">
@@ -226,5 +299,5 @@ export default function Home() {
 
       <Footer />
     </div>
-  )
+  );
 }

@@ -23,6 +23,7 @@ import { useRouter } from "next/navigation";
 import { TeacherProfileForm } from "@/components/profile/TeacherProfileForm";
 import { StudentProfileForm } from "@/components/profile/StudentProfileForm";
 import { User as UserData } from "@/types";
+import { Toaster } from "react-hot-toast";
 
 export default function CompleteProfilePage() {
   const [user, setUser] = useState<UserData | null>(null);
@@ -255,6 +256,8 @@ export default function CompleteProfilePage() {
           </Card>
         </div>
       </div>
+
+      <Toaster />
     </div>
   );
 }

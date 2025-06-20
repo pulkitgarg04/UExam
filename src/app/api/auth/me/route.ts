@@ -35,6 +35,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "User not found" }, { status: 404 })
     }
 
+    console.log(user);
+
     return NextResponse.json({ user })
   } catch (error) {
     console.error("Auth verification error:", error)

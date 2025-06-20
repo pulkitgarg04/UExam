@@ -15,25 +15,26 @@ datasource db {
 }
 
 model User {
-  id          String               @id @default(cuid())
-  name        String
-  email       String               @unique
-  password    String
-  role        Role
-  isVerified  Boolean              @default(false)
-  profileCompleted Boolean @default(false)
-  createdAt   DateTime             @default(now())
-  updatedAt   DateTime             @updatedAt
-  tests       Test[]               @relation("UserTests")
-  answers     Answer[]             @relation("UserAnswers")
-  teacherProfile TeacherProfile?
-  studentProfile StudentProfile?
+  id               String          @id @default(cuid())
+  name             String
+  email            String          @unique
+  password         String
+  role             Role
+  isVerified       Boolean         @default(false)
+  profileCompleted Boolean         @default(false)
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  tests            Test[]          @relation("UserTests")
+  answers          Answer[]        @relation("UserAnswers")
+  testResponses    TestResponse[]  @relation("UserToTestResponse")
+  teacherProfile   TeacherProfile?
+  studentProfile   StudentProfile?
 }
 
 model VerificationToken {
-  email   String   @id
-  token   String   @unique
-  expires DateTime
+  email     String   @id
+  token     String   @unique
+  expires   DateTime
   createdAt DateTime @default(now())
 }
 
@@ -45,68 +46,89 @@ model PasswordResetToken {
 }
 
 model TeacherProfile {
-  id                String       @id @default(cuid())
-  userId            String       @unique
-  user              User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  designation       String?
-  department        String[]
-  degreesTeaching   String[]
-  studentYears      String[]
-  employeeId        String?      @unique
-  gender            Gender?
-  dateOfBirth       DateTime?
-  phoneNumber       String?
+  designation     String?
+  department      String[]
+  degreesTeaching String[]
+  studentYears    String[]
+  employeeId      String?   @unique
+  gender          Gender?
+  dateOfBirth     DateTime?
+  phoneNumber     String?
 
-  createdAt         DateTime     @default(now())
-  updatedAt         DateTime     @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model StudentProfile {
-  id                String       @id @default(cuid())
-  userId            String       @unique
-  user              User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  rollNumber        String?      @unique
-  department        String?
-  yearOfStudy       Int?
-  courseName        String?
+  rollNumber  String? @unique
+  department  String?
+  yearOfStudy Int?
+  courseName  String?
 
-  dateOfBirth       DateTime?
-  gender            Gender?
-  bloodGroup        String?
-  phoneNumber       String?
-  permanentAddress  String?
+  dateOfBirth      DateTime?
+  gender           Gender?
+  bloodGroup       String?
+  phoneNumber      String?
+  permanentAddress String?
 
-  createdAt         DateTime     @default(now())
-  updatedAt         DateTime     @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Test {
-  id           String     @id @default(cuid())
-  title        String
-  subject      String
-  instructions String
-  duration     Int // (in mins)
-  totalPoints  Int
-  questions    Question[] @relation("TestQuestions")
-  creator      User       @relation("UserTests", fields: [creatorId], references: [id])
-  creatorId    String
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
+  id          String   @id @default(cuid())
+  title       String
+  subject     String
+  testLink    String
+  department  String
+  degree      String
+  studentYear String
+  date        DateTime
+  duration    Int // (in mins)
+  totalMarks  Int
+
+  questions     Question[]     @relation("TestQuestions")
+  testResponses TestResponse[] @relation("TestToTestResponse")
+
+  creator   User   @relation("UserTests", fields: [creatorId], references: [id])
+  creatorId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Question {
-  id        String       @id @default(cuid())
-  type      QuestionType
-  question  String
-  options   String[]
-  points    Int
-  test      Test         @relation("TestQuestions", fields: [testId], references: [id])
-  testId    String
-  answers   Answer[]     @relation("QuestionAnswers")
-  createdAt DateTime     @default(now())
-  updatedAt DateTime     @updatedAt
+  id          String       @id @default(cuid())
+  type        QuestionType
+  question    String
+  options     String[]     @default([])
+  marks       Int
+  test        Test         @relation("TestQuestions", fields: [testId], references: [id])
+  testId      String
+  answers     Answer[]     @relation("QuestionAnswers")
+  userAnswers UserAnswer[] @relation("QuestionUserAnswers")
+  testCases   TestCase[]   @relation("QuestionTestCases")
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model TestCase {
+  id         String   @id @default(cuid())
+  question   Question @relation("QuestionTestCases", fields: [questionId], references: [id])
+  questionId String
+  input      String
+  expected   String
+  isPublic   Boolean
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }
 
 model Answer {
@@ -115,8 +137,33 @@ model Answer {
   questionId String
   user       User     @relation("UserAnswers", fields: [userId], references: [id])
   userId     String
-  answer     String
+  answer     String? // skip if coding question
   createdAt  DateTime @default(now())
+}
+
+model TestResponse {
+  id            String       @id @default(cuid())
+  test          Test         @relation("TestToTestResponse", fields: [testId], references: [id])
+  testId        String
+  user          User         @relation("UserToTestResponse", fields: [userId], references: [id])
+  userId        String
+  userAnswers   UserAnswer[] @relation("TestResponseUserAnswers")
+  marksObtained Int          @default(0)
+  totalMarks    Int
+  submittedAt   DateTime     @default(now())
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+}
+
+model UserAnswer {
+  id             String       @id @default(cuid())
+  testResponse   TestResponse @relation("TestResponseUserAnswers", fields: [testResponseId], references: [id])
+  testResponseId String
+  question       Question     @relation("QuestionUserAnswers", fields: [questionId], references: [id])
+  questionId     String
+  answer         String?
+  isCorrect      Boolean
+  createdAt      DateTime     @default(now())
 }
 
 enum Role {
@@ -127,9 +174,7 @@ enum Role {
 
 enum QuestionType {
   MCQ
-  FILL_BLANK
-  ESSAY
-  TRUE_FALSE
+  CODING
 }
 
 enum Gender {

@@ -1,8 +1,9 @@
 import { NextResponse, NextRequest } from "next/server";
 import jwt from "jsonwebtoken";
 import type { JwtPayload } from "@/types";
+import { prisma } from "./lib/prisma";
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   const privateRoutes = [
@@ -17,8 +18,18 @@ export function middleware(request: NextRequest) {
     pathname.startsWith(route)
   );
 
+  if (!isPrivateRoute || pathname === '/profile/complete') {
+    return NextResponse.next();
+  }
+
   if (!isPrivateRoute) {
     return NextResponse.next();
+  }
+
+  const jwtSecret = process.env.JWT_SECRET;
+  if (!jwtSecret) {
+    console.error('JWT_SECRET is not defined in environment variables');
+    return NextResponse.redirect(new URL('/auth/login', request.url));
   }
 
   const token =
@@ -34,7 +45,20 @@ export function middleware(request: NextRequest) {
       token,
       process.env.JWT_SECRET || "JWT_SECRET"
     ) as JwtPayload;
-    console.log(decoded);
+
+    const user = await prisma.user.findUnique({
+      where: { email: decoded.email },
+      select: { id: true, profileCompleted: true, role: true },
+    });
+
+    if (!user) {
+      console.error(`User not found for email: ${decoded.email}`);
+      return NextResponse.redirect(new URL('/auth/login', request.url));
+    }
+
+    if(!user.profileCompleted) {
+      return NextResponse.redirect(new URL("/profile/complete", request.url));
+    }
 
     if (pathname.startsWith("/teacher") && decoded.role !== "TEACHER") {
       return NextResponse.redirect(new URL("/unauthorized", request.url));

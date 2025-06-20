@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Switch } from "@/components/ui/switch";
 import {
   Plus,
   Trash2,
@@ -33,43 +34,101 @@ import {
   FileText,
   Edit3,
 } from "lucide-react";
+import { DEGREES, STUDENT_YEARS, DEPARTMENTS } from "@/constants/data";
 import Link from "next/link";
-import { Switch } from "@/components/ui/switch";
+import toast, { Toaster } from "react-hot-toast";
+
+interface TestCase {
+  id: string;
+  input: string;
+  expected: string;
+  isPublic: boolean;
+}
 
 interface Question {
   id: string;
-  type: "mcq" | "fill-blank" | "essay" | "true-false";
+  type: "MCQ" | "CODING";
   question: string;
   options?: string[];
   correctAnswer?: string | number;
-  points: number;
+  marks: number;
+  testCases?: TestCase[];
+}
+
+enum QuestionType {
+  MCQ = "MCQ",
+  CODING = "CODING",
 }
 
 export default function CreateTest() {
   const [testDetails, setTestDetails] = useState({
     title: "",
-    description: "",
     subject: "",
+    testLink: "",
+    department: "",
+    degree: "",
+    studentYear: "",
+    date: "",
     duration: 60,
-    totalPoints: 0,
-    instructions: "",
-    randomizeQuestions: false,
-    showResults: true,
-    allowRetake: false,
+    totalMarks: 0,
   });
 
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentQuestion, setCurrentQuestion] = useState<Question>({
     id: "",
-    type: "mcq",
+    type: "MCQ",
     question: "",
     options: ["", "", "", ""],
     correctAnswer: "",
-    points: 1,
+    marks: 1,
+    testCases: [],
   });
+
+  const [currentTestCase, setCurrentTestCase] = useState<TestCase>({
+    id: "",
+    input: "",
+    expected: "",
+    isPublic: true,
+  });
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const addTestCase = () => {
+    if (currentTestCase.input.trim() && currentTestCase.expected.trim()) {
+      const newTestCase = {
+        ...currentTestCase,
+        id: Date.now().toString(),
+      };
+      setCurrentQuestion((prev) => ({
+        ...prev,
+        testCases: [...(prev.testCases || []), newTestCase],
+      }));
+      setCurrentTestCase({
+        id: "",
+        input: "",
+        expected: "",
+        isPublic: false,
+      });
+    }
+  };
+
+  const removeTestCase = (id: string) => {
+    setCurrentQuestion((prev) => ({
+      ...prev,
+      testCases: prev.testCases?.filter((tc) => tc.id !== id) || [],
+    }));
+  };
 
   const addQuestion = () => {
     if (currentQuestion.question.trim()) {
+      if (
+        currentQuestion.type === "CODING" &&
+        (!currentQuestion.testCases || currentQuestion.testCases.length === 0)
+      ) {
+        alert("Coding questions must have at least one test case");
+        return;
+      }
+
       const newQuestion = {
         ...currentQuestion,
         id: Date.now().toString(),
@@ -77,15 +136,16 @@ export default function CreateTest() {
       setQuestions([...questions, newQuestion]);
       setCurrentQuestion({
         id: "",
-        type: "mcq",
+        type: "MCQ",
         question: "",
         options: ["", "", "", ""],
         correctAnswer: "",
-        points: 1,
+        marks: 1,
+        testCases: [],
       });
       setTestDetails((prev) => ({
         ...prev,
-        totalPoints: prev.totalPoints + newQuestion.points,
+        totalMarks: prev.totalMarks + newQuestion.marks,
       }));
     }
   };
@@ -96,18 +156,51 @@ export default function CreateTest() {
     if (questionToRemove) {
       setTestDetails((prev) => ({
         ...prev,
-        totalPoints: prev.totalPoints - questionToRemove.points,
+        totalMarks: prev.totalMarks - questionToRemove.marks,
       }));
+    }
+  };
+
+  const handleSubmit = async () => {
+    setIsSubmitting(true);
+    try {
+      const response = await fetch("/api/tests", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...testDetails,
+          questions,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to create test");
+      }
+
+      window.location.href = "/teacher";
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        toast.error(error.message);
+        console.error("Error creating test:", error.message);
+      } else {
+        toast.error("An unknown error occurred.");
+        console.error("Unknown error creating test:", error);
+      }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const renderQuestionForm = () => {
     switch (currentQuestion.type) {
-      case "mcq":
+      case "MCQ":
         return (
           <div className="space-y-4">
             <div>
-              <Label htmlFor="question">Question</Label>
+              <Label className="mb-2" htmlFor="question">
+                Question
+              </Label>
               <Textarea
                 id="question"
                 placeholder="Enter your question here..."
@@ -163,14 +256,16 @@ export default function CreateTest() {
           </div>
         );
 
-      case "fill-blank":
+      case "CODING":
         return (
-          <div className="space-y-4">
+          <div className="space-y-6">
             <div>
-              <Label htmlFor="question">Question</Label>
+              <Label className="mb-2" htmlFor="question">
+                Problem Statement
+              </Label>
               <Textarea
                 id="question"
-                placeholder="Enter your question with _____ for blanks..."
+                placeholder="Describe the coding problem with detailed requirements, constraints, and examples..."
                 value={currentQuestion.question}
                 onChange={(e) =>
                   setCurrentQuestion({
@@ -178,108 +273,134 @@ export default function CreateTest() {
                     question: e.target.value,
                   })
                 }
+                rows={8}
               />
             </div>
-            <div>
-              <Label htmlFor="answer">Correct Answer</Label>
-              <Input
-                id="answer"
-                placeholder="Enter the correct answer"
-                value={(currentQuestion.correctAnswer as string) || ""}
-                onChange={(e) =>
-                  setCurrentQuestion({
-                    ...currentQuestion,
-                    correctAnswer: e.target.value,
-                  })
-                }
-              />
-            </div>
-          </div>
-        );
 
-      case "essay":
-        return (
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="question">Question</Label>
-              <Textarea
-                id="question"
-                placeholder="Enter your essay question..."
-                value={currentQuestion.question}
-                onChange={(e) =>
-                  setCurrentQuestion({
-                    ...currentQuestion,
-                    question: e.target.value,
-                  })
-                }
-              />
-            </div>
-            <div>
-              <Label htmlFor="guidelines">Grading Guidelines (Optional)</Label>
-              <Textarea
-                id="guidelines"
-                placeholder="Enter grading criteria or sample answer..."
-                rows={3}
-              />
-            </div>
-          </div>
-        );
-
-      case "true-false":
-        return (
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="question">Question</Label>
-              <Textarea
-                id="question"
-                placeholder="Enter your true/false question..."
-                value={currentQuestion.question}
-                onChange={(e) =>
-                  setCurrentQuestion({
-                    ...currentQuestion,
-                    question: e.target.value,
-                  })
-                }
-              />
-            </div>
-            <div className="flex items-center space-x-4">
-              <Label>Correct Answer:</Label>
-              <div className="flex space-x-2">
-                <Button
-                  type="button"
-                  variant={
-                    currentQuestion.correctAnswer === "true"
-                      ? "default"
-                      : "outline"
-                  }
-                  size="sm"
-                  onClick={() =>
-                    setCurrentQuestion({
-                      ...currentQuestion,
-                      correctAnswer: "true",
-                    })
-                  }
-                >
-                  True
-                </Button>
-                <Button
-                  type="button"
-                  variant={
-                    currentQuestion.correctAnswer === "false"
-                      ? "default"
-                      : "outline"
-                  }
-                  size="sm"
-                  onClick={() =>
-                    setCurrentQuestion({
-                      ...currentQuestion,
-                      correctAnswer: "false",
-                    })
-                  }
-                >
-                  False
-                </Button>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <Label>Test Cases</Label>
+                <Badge variant="outline">
+                  {currentQuestion.testCases?.length || 0} test cases
+                </Badge>
               </div>
+
+              <Card className="border-dashed">
+                <CardHeader>
+                  <CardTitle className="text-sm">Add Test Case</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label className="mb-2" htmlFor="input">
+                        Input
+                      </Label>
+                      <Textarea
+                        id="input"
+                        placeholder="Enter test input..."
+                        value={currentTestCase.input}
+                        onChange={(e) =>
+                          setCurrentTestCase({
+                            ...currentTestCase,
+                            input: e.target.value,
+                          })
+                        }
+                        rows={3}
+                      />
+                    </div>
+                    <div>
+                      <Label className="mb-2" htmlFor="expected">
+                        Expected Output
+                      </Label>
+                      <Textarea
+                        id="expected"
+                        placeholder="Enter expected output..."
+                        value={currentTestCase.expected}
+                        onChange={(e) =>
+                          setCurrentTestCase({
+                            ...currentTestCase,
+                            expected: e.target.value,
+                          })
+                        }
+                        rows={3}
+                      />
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <Switch
+                        id="isPublic"
+                        checked={currentTestCase.isPublic}
+                        onCheckedChange={(checked) =>
+                          setCurrentTestCase({
+                            ...currentTestCase,
+                            isPublic: checked,
+                          })
+                        }
+                      />
+                      <Label htmlFor="isPublic">
+                        Public Test Case (visible to students)
+                      </Label>
+                    </div>
+                    <Button onClick={addTestCase} size="sm">
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Test Case
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {currentQuestion.testCases &&
+                currentQuestion.testCases.length > 0 && (
+                  <div className="space-y-2">
+                    {currentQuestion.testCases.map((testCase, index) => (
+                      <Card key={testCase.id} className="p-4">
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1 space-y-2">
+                            <div className="flex items-center gap-2">
+                              <Badge variant="outline">
+                                Test Case {index + 1}
+                              </Badge>
+                              <Badge
+                                variant={
+                                  testCase.isPublic ? "default" : "secondary"
+                                }
+                              >
+                                {testCase.isPublic ? "Public" : "Hidden"}
+                              </Badge>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4 text-sm">
+                              <div>
+                                <Label className="text-xs text-gray-500">
+                                  Input:
+                                </Label>
+                                <pre className="bg-gray-50 p-2 rounded text-xs overflow-x-auto">
+                                  {testCase.input}
+                                </pre>
+                              </div>
+                              <div>
+                                <Label className="text-xs text-gray-500">
+                                  Expected:
+                                </Label>
+                                <pre className="bg-gray-50 p-2 rounded text-xs overflow-x-auto">
+                                  {testCase.expected}
+                                </pre>
+                              </div>
+                            </div>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => removeTestCase(testCase.id)}
+                            className="text-red-600 hover:text-red-700"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                )}
             </div>
           </div>
         );
@@ -291,7 +412,6 @@ export default function CreateTest() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Navigation */}
       <nav className="bg-white border-b sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
@@ -311,9 +431,13 @@ export default function CreateTest() {
                 <Eye className="w-4 h-4 mr-2" />
                 Preview
               </Button>
-              <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
+              <Button
+                onClick={handleSubmit}
+                disabled={isSubmitting || questions.length === 0}
+                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+              >
                 <Save className="w-4 h-4 mr-2" />
-                Save Test
+                {isSubmitting ? "Creating..." : "Create Test"}
               </Button>
             </div>
           </div>
@@ -322,7 +446,6 @@ export default function CreateTest() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid lg:grid-cols-3 gap-8">
-          {/* Test Configuration */}
           <div className="lg:col-span-1 space-y-6">
             <Card>
               <CardHeader>
@@ -333,7 +456,9 @@ export default function CreateTest() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <Label htmlFor="title">Test Title</Label>
+                  <Label className="mb-2" htmlFor="title">
+                    Test Title *
+                  </Label>
                   <Input
                     id="title"
                     placeholder="Enter test title"
@@ -345,29 +470,126 @@ export default function CreateTest() {
                 </div>
 
                 <div>
-                  <Label htmlFor="subject">Subject</Label>
-                  <Select
+                  <Label className="mb-2" htmlFor="subject">
+                    Subject *
+                  </Label>
+                  <Input
+                    id="subject"
+                    placeholder="e.g., Data Structures, Machine Learning"
                     value={testDetails.subject}
+                    onChange={(e) =>
+                      setTestDetails({
+                        ...testDetails,
+                        subject: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+
+                <div>
+                  <Label className="mb-2" htmlFor="testLink">
+                    Test Link *
+                  </Label>
+                  <Input
+                    id="testLink"
+                    placeholder="e.g., ds-midterm-2025"
+                    value={testDetails.testLink}
+                    onChange={(e) =>
+                      setTestDetails({
+                        ...testDetails,
+                        testLink: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+
+                <div>
+                  <Label className="mb-2" htmlFor="department">
+                    Department *
+                  </Label>
+                  <Select
+                    value={testDetails.department}
                     onValueChange={(value) =>
-                      setTestDetails({ ...testDetails, subject: value })
+                      setTestDetails({ ...testDetails, department: value })
                     }
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Select subject" />
+                      <SelectValue placeholder="Select department" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="mathematics">Mathematics</SelectItem>
-                      <SelectItem value="physics">Physics</SelectItem>
-                      <SelectItem value="chemistry">Chemistry</SelectItem>
-                      <SelectItem value="biology">Biology</SelectItem>
-                      <SelectItem value="english">English</SelectItem>
-                      <SelectItem value="history">History</SelectItem>
+                      {DEPARTMENTS.map((department) => (
+                        <SelectItem key={department} value={department}>
+                          {department}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div>
-                  <Label htmlFor="duration">Duration (minutes)</Label>
+                  <Label className="mb-2" htmlFor="degree">
+                    Degree *
+                  </Label>
+                  <Select
+                    value={testDetails.degree}
+                    onValueChange={(value) =>
+                      setTestDetails({ ...testDetails, degree: value })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select degree" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {DEGREES.map((degree) => (
+                        <SelectItem key={degree} value={degree}>
+                          {degree}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label className="mb-2" htmlFor="studentYear">
+                    Student Year *
+                  </Label>
+                  <Select
+                    value={testDetails.studentYear}
+                    onValueChange={(value) =>
+                      setTestDetails({ ...testDetails, studentYear: value })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select year" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {STUDENT_YEARS.map((year) => (
+                        <SelectItem key={year} value={year}>
+                          {year}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label className="mb-2" htmlFor="date">
+                    Test Date *
+                  </Label>
+                  <Input
+                    id="date"
+                    type="datetime-local"
+                    value={testDetails.date}
+                    onChange={(e) =>
+                      setTestDetails({ ...testDetails, date: e.target.value })
+                    }
+                  />
+                </div>
+
+                <div>
+                  <Label className="mb-2" htmlFor="duration">
+                    Duration (minutes) *
+                  </Label>
                   <Input
                     id="duration"
                     type="number"
@@ -379,76 +601,6 @@ export default function CreateTest() {
                       })
                     }
                   />
-                </div>
-
-                <div>
-                  <Label htmlFor="description">Description</Label>
-                  <Textarea
-                    id="description"
-                    placeholder="Brief description of the test"
-                    value={testDetails.description}
-                    onChange={(e) =>
-                      setTestDetails({
-                        ...testDetails,
-                        description: e.target.value,
-                      })
-                    }
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="instructions">Instructions</Label>
-                  <Textarea
-                    id="instructions"
-                    placeholder="Test instructions for students"
-                    value={testDetails.instructions}
-                    onChange={(e) =>
-                      setTestDetails({
-                        ...testDetails,
-                        instructions: e.target.value,
-                      })
-                    }
-                  />
-                </div>
-
-                <Separator />
-
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="randomize">Randomize Questions</Label>
-                    <Switch
-                      id="randomize"
-                      checked={testDetails.randomizeQuestions}
-                      onCheckedChange={(checked) =>
-                        setTestDetails({
-                          ...testDetails,
-                          randomizeQuestions: checked,
-                        })
-                      }
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="results">Show Results</Label>
-                    <Switch
-                      id="results"
-                      checked={testDetails.showResults}
-                      onCheckedChange={(checked) =>
-                        setTestDetails({ ...testDetails, showResults: checked })
-                      }
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="retake">Allow Retake</Label>
-                    <Switch
-                      id="retake"
-                      checked={testDetails.allowRetake}
-                      onCheckedChange={(checked) =>
-                        setTestDetails({ ...testDetails, allowRetake: checked })
-                      }
-                    />
-                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -466,8 +618,8 @@ export default function CreateTest() {
                   <Badge variant="outline">{questions.length}</Badge>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">Total Points:</span>
-                  <Badge variant="outline">{testDetails.totalPoints}</Badge>
+                  <span className="text-sm text-gray-600">Total Marks:</span>
+                  <Badge variant="outline">{testDetails.totalMarks}</Badge>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm text-gray-600">Duration:</span>
@@ -477,7 +629,6 @@ export default function CreateTest() {
             </Card>
           </div>
 
-          {/* Question Builder */}
           <div className="lg:col-span-2 space-y-6">
             <Card>
               <CardHeader>
@@ -486,46 +637,51 @@ export default function CreateTest() {
                   Add Question
                 </CardTitle>
                 <CardDescription>
-                  Create different types of questions for your test
+                  Create MCQ or coding questions for your test
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center space-x-4">
                   <div className="flex-1">
-                    <Label htmlFor="questionType">Question Type</Label>
+                    <Label className="mb-2" htmlFor="questionType">
+                      Question Type
+                    </Label>
                     <Select
                       value={currentQuestion.type}
-                      onValueChange={(value) =>
+                      onValueChange={(value: QuestionType) => {
                         setCurrentQuestion({
                           ...currentQuestion,
-                          type: value as Question["type"],
-                        })
-                      }
+                          type: value,
+                          testCases: value === "CODING" ? [] : undefined,
+                          options:
+                            value === "MCQ" ? ["", "", "", ""] : undefined,
+                        });
+                      }}
                     >
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="mcq">Multiple Choice</SelectItem>
-                        <SelectItem value="fill-blank">
-                          Fill in the Blank
+                        <SelectItem value="MCQ">
+                          Multiple Choice Question
                         </SelectItem>
-                        <SelectItem value="essay">Essay</SelectItem>
-                        <SelectItem value="true-false">True/False</SelectItem>
+                        <SelectItem value="CODING">Coding Problem</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div className="w-24">
-                    <Label htmlFor="points">Points</Label>
+                    <Label className="mb-2" htmlFor="marks">
+                      Marks
+                    </Label>
                     <Input
-                      id="points"
+                      id="marks"
                       type="number"
                       min="1"
-                      value={currentQuestion.points}
+                      value={currentQuestion.marks}
                       onChange={(e) =>
                         setCurrentQuestion({
                           ...currentQuestion,
-                          points: Number.parseInt(e.target.value) || 1,
+                          marks: Number.parseInt(e.target.value) || 1,
                         })
                       }
                     />
@@ -541,7 +697,6 @@ export default function CreateTest() {
               </CardContent>
             </Card>
 
-            {/* Questions List */}
             {questions.length > 0 && (
               <Card>
                 <CardHeader>
@@ -556,15 +711,19 @@ export default function CreateTest() {
                       <div className="flex justify-between items-start">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-2">
-                            <Badge variant="outline">
-                              {question.type.toUpperCase()}
-                            </Badge>
-                            <Badge>{question.points} pts</Badge>
+                            <Badge variant="outline">{question.type}</Badge>
+                            <Badge>{question.marks} marks</Badge>
+                            {question.type === "CODING" && (
+                              <Badge variant="secondary">
+                                {question.testCases?.length || 0} test cases
+                              </Badge>
+                            )}
                           </div>
                           <p className="font-medium">
-                            {index + 1}. {question.question}
+                            {index + 1}. {question.question.substring(0, 100)}
+                            {question.question.length > 100 && "..."}
                           </p>
-                          {question.type === "mcq" && question.options && (
+                          {question.type === "MCQ" && question.options && (
                             <div className="mt-2 space-y-1">
                               {question.options.map((option, optIndex) => (
                                 <div
@@ -580,12 +739,6 @@ export default function CreateTest() {
                                 </div>
                               ))}
                             </div>
-                          )}
-                          {(question.type === "fill-blank" ||
-                            question.type === "true-false") && (
-                            <p className="text-sm text-green-600 mt-1">
-                              Answer: {question.correctAnswer}
-                            </p>
                           )}
                         </div>
                         <Button
@@ -605,6 +758,8 @@ export default function CreateTest() {
           </div>
         </div>
       </div>
+
+      <Toaster />
     </div>
   );
 }

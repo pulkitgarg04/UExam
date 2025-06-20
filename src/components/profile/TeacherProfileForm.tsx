@@ -24,6 +24,7 @@ import { User, Save, CheckCircle, X, GraduationCap } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { DEPARTMENTS, STUDENT_YEARS, DEGREES } from "@/constants/data";
 import type { User as UserData } from "@/types";
+import toast from "react-hot-toast";
 
 interface TeacherProfileFormProps {
   user: UserData;
@@ -142,15 +143,21 @@ export function TeacherProfileForm({
       });
 
       if (response.ok) {
-        const updatedUser = { ...user, profileCompleted: true };
-        localStorage.setItem("user", JSON.stringify(updatedUser));
         onComplete();
       } else {
-        const error = await response.json();
-        console.error("Profile completion failed:", error);
+        const errorResponse = await response.json();
+        const errorMessage = errorResponse?.error || "An unknown error occurred";
+        toast.error(errorMessage);
+        console.error(errorResponse);
       }
-    } catch (error) {
-      console.error("Error saving profile:", error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        toast.error(error.message);
+        console.error("Error saving profile:", error.message);
+      } else {
+        toast.error("An unknown error occurred");
+        console.error("Unknown error:", error);
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -407,7 +414,7 @@ export function TeacherProfileForm({
         >
           {isSubmitting ? (
             <>
-              <Save className="w-4 h-4 mr-2 animate-spin" />
+              <Save className="w-4 h-4 mr-2" />
               Completing Profile...
             </>
           ) : (

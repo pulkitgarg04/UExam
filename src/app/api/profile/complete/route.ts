@@ -32,6 +32,17 @@ export async function POST(request: NextRequest) {
         );
       }
 
+      const existingTeacher = await prisma.teacherProfile.findFirst({
+        where: { employeeId: profileData.employeeId },
+      });
+
+      if (existingTeacher) {
+        return NextResponse.json(
+          { error: "User with this employee ID already exists!" },
+          { status: 400 }
+        );
+      }
+
       await prisma.teacherProfile.create({
         data: {
           userId,
@@ -67,6 +78,17 @@ export async function POST(request: NextRequest) {
         );
       }
 
+      const existingStudent = await prisma.studentProfile.findFirst({
+        where: { rollNumber: profileData.rollNumber },
+      });
+
+      if (existingStudent) {
+        return NextResponse.json(
+          { error: "User with this Roll Number already exists!" },
+          { status: 400 }
+        );
+      }
+
       await prisma.studentProfile.create({
         data: {
           userId,
@@ -97,10 +119,20 @@ export async function POST(request: NextRequest) {
       message: "Profile completed successfully",
       profileCompleted: true,
     });
-  } catch (error) {
-    console.error("Error completing profile:", error);
+  } catch (error: unknown) {
+    const errorMessage =
+      error instanceof Error
+        ? error.message
+        : typeof error === "string"
+        ? error
+        : JSON.stringify(error);
+
+    // console.error("Error completing profile:", error);
+
     return NextResponse.json(
-      { error: "Failed to complete profile" },
+      {
+        error: `An error occurred: ${errorMessage}`,
+      },
       { status: 500 }
     );
   }
