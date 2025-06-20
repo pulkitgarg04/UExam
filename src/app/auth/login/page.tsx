@@ -62,6 +62,8 @@ export default function LoginPage() {
         throw new Error(data.error || "Login failed");
       }
 
+      localStorage.setItem("userId", data.user.id);
+
       if (data.user.role === "TEACHER") {
         router.push("/teacher");
       } else {

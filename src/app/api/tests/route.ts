@@ -40,10 +40,7 @@ interface TestCase {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    console.log(body);
-    const { title, subject, testLink, department, degree, studentYear, date, duration, totalMarks, questions } = body;
-
-    const creatorId = "cmc4wk7rf0000c40vfuh0n01h";
+    const { title, subject, testLink, department, degree, studentYear, date, duration, totalMarks, questions, creatorId } = body;
 
     if (
       !title ||
