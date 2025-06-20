@@ -7,36 +7,6 @@ interface TestCase {
   isPublic: boolean;
 }
 
-// export async function GET(request: NextRequest) {
-//   try {
-//     const url = new URL(request.url)
-//     const creatorId = url.searchParams.get("creatorId")
-//     const page = Number.parseInt(url.searchParams.get("page") || "1")
-//     const limit = Number.parseInt(url.searchParams.get("limit") || "10")
-
-//     let filteredTests = tests
-//     if (creatorId) {
-//       filteredTests = tests.filter((test) => test.creatorId === creatorId)
-//     }
-
-//     const startIndex = (page - 1) * limit
-//     const endIndex = startIndex + limit
-//     const paginatedTests = filteredTests.slice(startIndex, endIndex)
-
-//     return NextResponse.json({
-//       tests: paginatedTests,
-//       pagination: {
-//         page,
-//         limit,
-//         total: filteredTests.length,
-//         totalPages: Math.ceil(filteredTests.length / limit),
-//       },
-//     })
-//   } catch (error) {
-//     return NextResponse.json({ error: "Failed to fetch tests: " + error }, { status: 500 })
-//   }
-// }
-
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
@@ -70,7 +40,7 @@ export async function POST(request: NextRequest) {
         department,
         degree,
         studentYear,
-        date: new Date(date),
+        date,
         duration,
         totalMarks,
         creatorId,

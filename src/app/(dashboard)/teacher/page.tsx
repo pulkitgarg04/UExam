@@ -100,7 +100,7 @@ interface TestSubmission {
   };
 }
 
-export default function TeacherPortalContent() {
+export default function TeacherPortal() {
   const [teacher, setTeacher] = useState<Teacher | null>(null);
   const [students, setStudents] = useState<Student[]>([]);
   const [tests, setTests] = useState<Test[]>([]);

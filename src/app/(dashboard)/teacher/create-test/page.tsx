@@ -166,13 +166,15 @@ export default function CreateTest() {
     try {
 
       const creatorId = localStorage.getItem("userId");
-
+      const testDateTime = new Date(testDetails.date)
+      
       const response = await fetch("/api/tests", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...testDetails,
           questions,
+          date: testDateTime.toISOString(),
           creatorId,
         }),
       });

@@ -53,14 +53,25 @@ export default function SignupPage() {
     setIsLoading(true);
     setError("");
 
+    const passwordRegex =
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?.&])[A-Za-z\d@$!%*?&]{8,}$/;
+
+  if (!passwordRegex.test(formData.password)) {
+    setError(
+      "Password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, one number, and one special character"
+    );
+    setIsLoading(false);
+    return;
+  }
+
     if (formData.password !== formData.confirmPassword) {
       setError("Passwords do not match");
       setIsLoading(false);
       return;
     }
 
-    if (formData.password.length < 6) {
-      setError("Password must be at least 6 characters long");
+    if (formData.password.length < 8) {
+      setError("Password must be at least 8 characters long");
       setIsLoading(false);
       return;
     }
@@ -274,7 +285,7 @@ export default function SignupPage() {
                   </Button>
                 </div>
                 <p className="text-xs text-gray-500">
-                  Password must be at least 6 characters long
+                  Password must be at least 8 characters long, including uppercase, lowercase, numbers and special characters.
                 </p>
               </div>
 
