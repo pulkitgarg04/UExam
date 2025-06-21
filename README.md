@@ -10,6 +10,7 @@
 - [Next.js](https://nextjs.org/)
 - [Tailwind CSS](https://tailwindcss.com/)
 - [Prisma](https://prisma.io/)
+- [Judge0](https://judge0.com/)
 
 ## Getting Started
 
@@ -67,3 +68,4 @@ Special thanks to these amazing projects which help power UExam:
 - [Next.js](https://nextjs.org/)
 - [Tailwind CSS](https://tailwindcss.com/)
 - [Prisma](https://prisma.io/)
+- [Judge0](https://judge0.com/)
